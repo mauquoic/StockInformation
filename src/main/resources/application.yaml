@@ -1,0 +1,30 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: true
+    context-path: /api/v1
+  error:
+    include-message: always
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  cache:
+    jcache:
+      config: classpath:ehcache.xml
+
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQL9Dialect
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
+      validator:
+        apply_to_ddl: true
+    properties:
+      hibernate.order_by.default_null_ordering: first

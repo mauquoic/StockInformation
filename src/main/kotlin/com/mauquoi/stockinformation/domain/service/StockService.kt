@@ -1,0 +1,66 @@
+package com.mauquoi.stockinformation.domain.service
+
+import com.mauquoi.stockinformation.StockNotFoundException
+import com.mauquoi.stockinformation.domain.model.entity.Stock
+import com.mauquoi.stockinformation.domain.model.entity.StockHistory
+import com.mauquoi.stockinformation.domain.repository.StockRepository
+import com.mauquoi.stockinformation.gateway.finnhub.FinnhubGateway
+import org.slf4j.LoggerFactory
+import org.springframework.stereotype.Service
+import java.time.LocalDate
+import javax.inject.Inject
+
+@Service
+class StockService @Inject constructor(private val stockRepository: StockRepository,
+                                       private val finnhubGateway: FinnhubGateway) {
+
+    fun getStock(id: Long): Stock {
+        return stockRepository.findById(id).orElseThrow { StockNotFoundException() }
+    }
+
+    fun editStock(id: Long, stock: Stock): Stock {
+        val savedStock = getStock(id)
+        val editedStock = savedStock.copy(name = stock.name,
+                symbol = stock.symbol,
+                currency = stock.currency,
+                market = stock.market
+        )
+        return stockRepository.save(editedStock)
+    }
+
+    fun getStockPrice(symbol: String): Double {
+        return finnhubGateway.getStockPrice(symbol).current
+    }
+
+    fun getStockName(symbol: String, market: String): Stock {
+        val exchange = finnhubGateway.getExchange(market)
+        return exchange.stocks.first { it.symbol == symbol }
+    }
+
+    fun updateStockExchange(market: String) {
+        LOGGER.info("Updating market $market.")
+        try {
+            val exchange = finnhubGateway.getExchange(market)
+            exchange.stocks.distinctBy { it.lookup }
+                    .forEach {
+                        if (stockRepository.findByLookup(it.lookup!!).isEmpty) {
+                            stockRepository.save(it)
+                        }
+                    }
+        } catch (e: Exception) {
+            LOGGER.warn("Failed to update $market", e)
+        }
+    }
+
+    fun getStockExchange(market: String): List<Stock> {
+        return stockRepository.findAllByMarket(market).sortedBy { it.lookup }
+    }
+
+    fun getStockValues(symbol: String, startDate: LocalDate = LocalDate.now().minusYears(25), endDate: LocalDate = LocalDate.now()): List<StockHistory> {
+        return finnhubGateway.getStockCandles(stockRepository.findByLookup(symbol).get(), startDate, endDate)
+    }
+
+    companion object {
+        private val LOGGER = LoggerFactory.getLogger(StockSchedulingService::class.java)
+    }
+}
