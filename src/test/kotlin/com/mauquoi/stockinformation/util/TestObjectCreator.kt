@@ -3,7 +3,11 @@ package com.mauquoi.stockinformation.util
 import com.mauquoi.stockinformation.domain.model.CurrencyLookup
 import com.mauquoi.stockinformation.domain.model.entity.Exchange
 import com.mauquoi.stockinformation.domain.model.entity.Stock
+import com.mauquoi.stockinformation.gateway.finnhub.dto.FinnhubStockDto
 import com.mauquoi.stockinformation.gateway.finnhub.dto.QuoteDto
+import com.mauquoi.stockinformation.gateway.finnhub.dto.StockHistoryDto
+import java.math.BigDecimal
+import java.math.BigInteger
 import java.time.Instant
 import java.time.LocalDate
 import java.util.*
@@ -60,5 +64,22 @@ object TestObjectCreator {
                        timeStamp: Instant = Instant.now()
     ): QuoteDto {
         return QuoteDto(open = open, previousClose = previousClose, current = current, low = low, high = high, timeStamp = timeStamp)
+    }
+
+    fun createStockHistoryDto(): StockHistoryDto {
+        return StockHistoryDto(closeList = bigDecimalList(), openList = bigDecimalList(), highList = bigDecimalList(), lowList = bigDecimalList(),
+                timestamps = listOf(Instant.now()), volumeList = listOf(BigInteger.ONE), status = "OK")
+    }
+
+    fun createStockDtos(): List<FinnhubStockDto> {
+        return listOf(
+                FinnhubStockDto(description = "Accenture", symbol = "ACN", displaySymbol = "ACN", currency = "USD", type = "DS"),
+                FinnhubStockDto(description = "Geberit", symbol = "GEBN.SW", displaySymbol = "GEBN.SW", currency = "CHF", type = "DS"),
+                FinnhubStockDto(description = "Swiss high dividends", symbol = "CHDVD.SW", displaySymbol = "CHDVD.SW", currency = "CHF", type = "DS")
+        )
+    }
+
+    private fun bigDecimalList(): List<BigDecimal> {
+        return listOf(BigDecimal.ONE)
     }
 }
