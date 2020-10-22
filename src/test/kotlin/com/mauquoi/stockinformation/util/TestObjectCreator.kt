@@ -3,6 +3,8 @@ package com.mauquoi.stockinformation.util
 import com.mauquoi.stockinformation.domain.model.CurrencyLookup
 import com.mauquoi.stockinformation.domain.model.entity.Exchange
 import com.mauquoi.stockinformation.domain.model.entity.Stock
+import com.mauquoi.stockinformation.gateway.finnhub.dto.QuoteDto
+import java.time.Instant
 import java.time.LocalDate
 import java.util.*
 
@@ -10,7 +12,6 @@ object TestObjectCreator {
 
     fun usd(): Currency = Currency.getInstance("USD")
     fun chf(): Currency = Currency.getInstance("CHF")
-
 
     fun createUsStock(symbol: String = "ACN",
                       market: String = "US",
@@ -49,5 +50,15 @@ object TestObjectCreator {
                 Stock(name = "Geberit", symbol = "GEBN", currency = chf(), type = "EQS", market = "SW"),
                 Stock(name = "Swiss high dividends", symbol = "CHDVD", currency = chf(), type = "ETF", market = "SW")
         ))
+    }
+
+    fun createQuoteDto(open: Double = 2.0,
+                       previousClose: Double = 1.8,
+                       current: Double = 1.9,
+                       low: Double = 1.7,
+                       high: Double = 2.1,
+                       timeStamp: Instant = Instant.now()
+    ): QuoteDto {
+        return QuoteDto(open = open, previousClose = previousClose, current = current, low = low, high = high, timeStamp = timeStamp)
     }
 }

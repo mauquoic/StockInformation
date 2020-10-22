@@ -18,16 +18,6 @@ class StockService @Inject constructor(private val stockRepository: StockReposit
         return stockRepository.findById(id).orElseThrow { StockNotFoundException() }
     }
 
-    fun editStock(id: Long, stock: Stock): Stock {
-        val savedStock = getStock(id)
-        val editedStock = savedStock.copy(name = stock.name,
-                symbol = stock.symbol,
-                currency = stock.currency,
-                market = stock.market
-        )
-        return stockRepository.save(editedStock)
-    }
-
     fun getStockPrice(symbol: String): Double {
         return finnhubGateway.getStockPrice(symbol).current
     }
