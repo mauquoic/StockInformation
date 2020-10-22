@@ -61,6 +61,6 @@ class StockService @Inject constructor(private val stockRepository: StockReposit
     }
 
     companion object {
-        private val LOGGER = LoggerFactory.getLogger(StockSchedulingService::class.java)
+        private val LOGGER = LoggerFactory.getLogger(StockService::class.java)
     }
 }

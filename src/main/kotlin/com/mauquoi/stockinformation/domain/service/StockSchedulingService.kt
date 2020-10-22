@@ -8,6 +8,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.annotation.Profile
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
@@ -17,6 +19,7 @@ import java.time.LocalDate
 import javax.inject.Inject
 import javax.transaction.Transactional
 
+@Profile("!test")
 @Service
 class StockSchedulingService @Inject constructor(val stockService: StockService,
                                                  val stockRepository: StockRepository,
