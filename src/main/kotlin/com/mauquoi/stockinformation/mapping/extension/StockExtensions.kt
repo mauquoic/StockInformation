@@ -6,26 +6,12 @@ import com.mauquoi.stockinformation.domain.model.entity.Stock
 import com.mauquoi.stockinformation.gateway.ecb.dto.CurrencyLookupDto
 import com.mauquoi.stockinformation.gateway.finnhub.dto.FinnhubStockDto
 import com.mauquoi.stockinformation.mapping.MappingUtil
-import com.mauquoi.stockinformation.model.dto.StockDetailsDto
 import com.mauquoi.stockinformation.model.dto.StockDto
 import java.util.*
 
 fun Stock.toDto(): StockDto = StockDto(name = this.name,
         symbol = this.symbol,
-        lookup = this.lookup!!)
-
-fun Stock.toDetailsDto(): StockDetailsDto = StockDetailsDto(name = this.name,
-        symbol = this.symbol,
-        market = this.market,
-        currency = this.currency,
-        type = this.type)
-
-fun StockDetailsDto.toDomain(): Stock = Stock(
-        name = this.name,
-        symbol = this.symbol,
-        market = this.market,
-        currency = this.currency,
-        type = this.type
+        lookup = this.lookup!!
 )
 
 fun FinnhubStockDto.toDomain(market: String, markets: List<Market>): Stock {

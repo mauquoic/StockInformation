@@ -12,9 +12,6 @@ import java.util.*
 @ResponseStatus(value = HttpStatus.NOT_FOUND)
 class StockNotFoundException : RuntimeException("No stock could be found by that ID.")
 
-@ResponseStatus(value = HttpStatus.PRECONDITION_REQUIRED)
-class PreferredCurrencyUnknownException : RuntimeException("No currency preference known for the user.")
-
 @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
 class UnknownCurrencyException(currency: Currency) : RuntimeException("Could not convert to the currency $currency.")
 

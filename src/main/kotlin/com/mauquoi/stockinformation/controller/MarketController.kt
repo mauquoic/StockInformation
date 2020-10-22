@@ -25,7 +25,6 @@ class MarketController @Inject constructor(private val stockService: StockServic
         return ResponseEntity.ok(markets)
     }
 
-
     @PutMapping(STOCKS_BY_MARKET)
     fun updateEntireMarket(@PathVariable(URL.PathVariable.MARKET) market: String): ResponseEntity<Nothing> {
         stockService.updateStockExchange(market)
