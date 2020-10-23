@@ -3,6 +3,7 @@ package com.mauquoi.stockinformation.util
 import com.mauquoi.stockinformation.domain.model.CurrencyLookup
 import com.mauquoi.stockinformation.domain.model.entity.Exchange
 import com.mauquoi.stockinformation.domain.model.entity.Stock
+import com.mauquoi.stockinformation.gateway.ecb.dto.CurrencyLookupDto
 import com.mauquoi.stockinformation.gateway.finnhub.dto.FinnhubStockDto
 import com.mauquoi.stockinformation.gateway.finnhub.dto.QuoteDto
 import com.mauquoi.stockinformation.gateway.finnhub.dto.StockHistoryDto
@@ -77,6 +78,14 @@ object TestObjectCreator {
                 FinnhubStockDto(description = "Geberit", symbol = "GEBN.SW", displaySymbol = "GEBN.SW", currency = "CHF", type = "DS"),
                 FinnhubStockDto(description = "Swiss high dividends", symbol = "CHDVD.SW", displaySymbol = "CHDVD.SW", currency = "CHF", type = "DS")
         )
+    }
+
+    fun createCurrencyLookupDto(): CurrencyLookupDto {
+        val currency = Currency.getInstance("USD")
+        return CurrencyLookupDto(base = currency, date = LocalDate.now(), rates = mapOf(
+                Currency.getInstance("CHF") to 1.1,
+                Currency.getInstance("EUR") to 0.9
+        ))
     }
 
     private fun bigDecimalList(): List<BigDecimal> {
