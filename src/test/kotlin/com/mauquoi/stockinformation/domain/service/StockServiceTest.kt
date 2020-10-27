@@ -21,6 +21,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
+import java.math.BigDecimal
+import java.time.LocalDate
 import java.util.*
 
 @ExtendWith(MockKExtension::class)
@@ -37,6 +39,7 @@ internal class StockServiceTest {
     private val capturedStock = slot<Stock>()
     private val capturedShortForm = slot<String>()
     private val capturedExchange = slot<String>()
+    private val capturedDate = slot<LocalDate>()
 
     @BeforeEach
     fun setUp() {
@@ -102,6 +105,19 @@ internal class StockServiceTest {
         every { stockRepository.findById(capture(capturedStockId)) } returns Optional.empty()
 
         assertThrows<StockNotFoundException> { stockService.getStock(1L) }
+    }
+
+    @Test
+    fun getStockValues() {
+        every {
+            finnhubGateway.getStockCandles(any(), any(), any())
+        } returns listOf(TestObjectCreator.createStockHistory())
+
+        val stockValues = stockService.getStockValues(TestObjectCreator.createUsStock(), LocalDate.now())
+        assertAll(
+                { assertThat(stockValues[0].highestValue, `is`(BigDecimal.ONE)) },
+                { assertThat(stockValues[0].lowestValue, `is`(BigDecimal.ONE)) }
+        )
     }
 
     @Test

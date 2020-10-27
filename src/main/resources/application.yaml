@@ -28,3 +28,7 @@ spring:
         apply_to_ddl: true
     properties:
       hibernate.order_by.default_null_ordering: first
+
+app:
+  scheduling:
+    waiting-time: 60000

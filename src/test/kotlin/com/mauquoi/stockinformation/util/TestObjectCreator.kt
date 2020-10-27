@@ -3,6 +3,8 @@ package com.mauquoi.stockinformation.util
 import com.mauquoi.stockinformation.domain.model.CurrencyLookup
 import com.mauquoi.stockinformation.domain.model.entity.Exchange
 import com.mauquoi.stockinformation.domain.model.entity.Stock
+import com.mauquoi.stockinformation.domain.model.entity.StockHistory
+import com.mauquoi.stockinformation.domain.model.entity.StockHistoryId
 import com.mauquoi.stockinformation.gateway.ecb.dto.CurrencyLookupDto
 import com.mauquoi.stockinformation.gateway.finnhub.dto.FinnhubStockDto
 import com.mauquoi.stockinformation.gateway.finnhub.dto.QuoteDto
@@ -23,7 +25,7 @@ object TestObjectCreator {
                       name: String = "Accenture",
                       currency: Currency = Currency.getInstance("USD"),
                       updatable: Boolean = true,
-                      lastUpdate: LocalDate = LocalDate.now(),
+                      lastUpdate: LocalDate? = LocalDate.now(),
                       type: String = "EQS",
                       remark: String? = null): Stock {
         return Stock(symbol = symbol, market = market, name = name, currency = currency, type = type, lastUpdate = lastUpdate, remark = remark, updatable = updatable)
@@ -75,7 +77,7 @@ object TestObjectCreator {
     fun createStockDtos(): List<FinnhubStockDto> {
         return listOf(
                 FinnhubStockDto(description = "Accenture", symbol = "ACN", displaySymbol = "ACN", currency = "USD", type = "DS"),
-                FinnhubStockDto(description = "Geberit", symbol = "GEBN.SW", displaySymbol = "GEBN.SW", currency = "CHF", type = "DS"),
+                FinnhubStockDto(description = "Geberit", symbol = "GEBN.SW", displaySymbol = "GEBN.SW", currency = "GBX"),
                 FinnhubStockDto(description = "Swiss high dividends", symbol = "CHDVD.SW", displaySymbol = "CHDVD.SW", currency = "CHF", type = "DS")
         )
     }
@@ -90,5 +92,11 @@ object TestObjectCreator {
 
     private fun bigDecimalList(): List<BigDecimal> {
         return listOf(BigDecimal.ONE)
+    }
+
+    fun createStockHistory(id: String = "ACN", date: LocalDate = LocalDate.now(),
+                           close: BigDecimal = BigDecimal.ONE, open: BigDecimal = BigDecimal.ONE,
+                           low: BigDecimal = BigDecimal.ONE, high: BigDecimal = BigDecimal.ONE): StockHistory {
+        return StockHistory(id = StockHistoryId(id, date = date), valueAtClose = close, valueAtOpen = open, lowestValue = low, highestValue = high)
     }
 }

@@ -4,15 +4,12 @@ import com.mauquoi.stockinformation.domain.model.Market
 import com.mauquoi.stockinformation.domain.model.entity.Stock
 import com.mauquoi.stockinformation.domain.repository.StockHistoryRepository
 import com.mauquoi.stockinformation.domain.repository.StockRepository
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
-import org.springframework.scheduling.annotation.Async
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.LocalDate
@@ -21,20 +18,26 @@ import javax.transaction.Transactional
 
 @Profile("!test")
 @Service
-class StockSchedulingService @Inject constructor(val stockService: StockService,
-                                                 val stockRepository: StockRepository,
-                                                 val stockHistoryRepository: StockHistoryRepository,
-                                                 val markets: List<Market>) {
+class StockSchedulingService @Inject constructor(private val stockService: StockService,
+                                                 private val stockRepository: StockRepository,
+                                                 private val stockHistoryRepository: StockHistoryRepository,
+                                                 private val markets: List<Market>) {
 
     private var updateStocks: Boolean = true
+
+    @Value("\${app.scheduling.waiting-time}")
+    private var waitingTime: Long = 1
 
     @Scheduled(cron = "0 0 0 1 1/1 ?")
     fun updateMarkets() {
         updateStocks = false
         LOGGER.info("Starting the market update.")
-        markets.shuffled().forEach { this.stockService.updateStockExchange(it.market) }
+        runBlocking {
+            val jobs = markets.shuffled().map { GlobalScope.launch { stockService.updateStockExchange(it.market) } }
+            jobs.joinAll()
+        }
         LOGGER.info("Finished the market update.")
-        Thread.sleep(60000)
+        Thread.sleep(waitingTime)
         updateStocks = true
     }
 
@@ -48,24 +51,25 @@ class StockSchedulingService @Inject constructor(val stockService: StockService,
     @Scheduled(fixedRate = 8000)
     fun updateStockValues() {
         if (updateStocks) {
-            GlobalScope.launch {
-                LOGGER.info("Updating new stocks.")
-                val stocksThatNeedUpdates = stockRepository.findTop8ByUpdatableIsTrueOrderByLastUpdateAsc()
-                stocksThatNeedUpdates.forEach { async { updateStock(it) } }
-                LOGGER.trace("Updated 60 more stocks")
+            LOGGER.info("Updating new stocks.")
+            val stocksThatNeedUpdates = stockRepository.findTop8ByUpdatableIsTrueOrderByLastUpdateAsc()
+            runBlocking {
+                val jobs = stocksThatNeedUpdates.map { GlobalScope.launch(Dispatchers.Default) { updateStock(it) } }
+                jobs.joinAll()
             }
+            LOGGER.trace("Updated 8 more stocks")
         }
     }
 
-    @Async
     @Transactional
     fun updateStock(stock: Stock) {
         try {
-            val startDate: LocalDate = stock.lastUpdate ?: LocalDate.now().minusYears(25)
+            val startDate: LocalDate = stock.lastUpdate?.plusDays(1L) ?: LocalDate.now().minusYears(25)
             LOGGER.info("Gathering historical values for ${stock.lookup} for the time between $startDate and today.")
-            val stockValues = this.stockService.getStockValues(stock.lookup!!)
+            val stockValues = this.stockService.getStockValues(stock, stock.lastUpdate?.plusDays(1)
+                    ?: LocalDate.now().minusYears(25))
             stockHistoryRepository.saveAll(stockValues)
-            stock.updated(stockValues.maxBy { it.id.date }?.id?.date)
+            stock.updated(stockValues.maxByOrNull { it.id.date }?.id?.date)
             LOGGER.info("Saved historical values for ${stock.lookup} for the time between $startDate and today.")
         } catch (e: Exception) {
             LOGGER.warn("Failed to update the history for ${stock.lookup}", e)

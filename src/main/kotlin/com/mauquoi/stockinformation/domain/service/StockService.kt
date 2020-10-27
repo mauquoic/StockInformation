@@ -46,8 +46,8 @@ class StockService @Inject constructor(private val stockRepository: StockReposit
         return stockRepository.findAllByMarket(market).sortedBy { it.lookup }
     }
 
-    fun getStockValues(symbol: String, startDate: LocalDate = LocalDate.now().minusYears(25), endDate: LocalDate = LocalDate.now()): List<StockHistory> {
-        return finnhubGateway.getStockCandles(stockRepository.findByLookup(symbol).get(), startDate, endDate)
+    fun getStockValues(stock: Stock, startDate: LocalDate, endDate: LocalDate = LocalDate.now()): List<StockHistory> {
+        return finnhubGateway.getStockCandles(stock, startDate, endDate)
     }
 
     companion object {
