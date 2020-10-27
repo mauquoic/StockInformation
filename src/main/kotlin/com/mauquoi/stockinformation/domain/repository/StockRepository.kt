@@ -7,5 +7,5 @@ import java.util.*
 interface StockRepository: JpaRepository<Stock, Long> {
     fun findByLookup(createLookup: String): Optional<Stock>
     fun findAllByMarket(market: String): Set<Stock>
-    fun findTop8ByUpdatableIsTrueOrderByLastUpdateAsc(): List<Stock>
+    fun findTop10ByUpdatableIsTrueOrderByLastUpdateAsc(): List<Stock>
 }

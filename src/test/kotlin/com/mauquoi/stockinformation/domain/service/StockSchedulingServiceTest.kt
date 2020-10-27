@@ -69,7 +69,7 @@ internal class StockSchedulingServiceTest {
 
     @Test
     fun updateStockValues_happyCase() {
-        every { stockRepository.findTop8ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createUsStock())
+        every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createUsStock())
         every { stockService.getStockValues(any(), any()) } returns listOf(TestObjectCreator.createStockHistory(id = "ACN", date = LocalDate.now()))
         every { stockRepository.save(capture(storedStockSlot)) } returns TestObjectCreator.createUsStock()
         every { stockHistoryRepository.saveAll(capture(stockHistorySlot)) } returns listOf(TestObjectCreator.createStockHistory())
@@ -88,7 +88,7 @@ internal class StockSchedulingServiceTest {
 
     @Test
     fun updateStockValues_exception_stockIsStoredAsNotUpdatable() {
-        every { stockRepository.findTop8ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createUsStock(lastUpdate = null))
+        every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createUsStock(lastUpdate = null))
         every { stockService.getStockValues(any(), any()) } throws RuntimeException()
         every { stockRepository.save(capture(storedStockSlot)) } returns TestObjectCreator.createUsStock()
 
@@ -105,7 +105,7 @@ internal class StockSchedulingServiceTest {
 
     @Test
     fun updateStockValues_multipleTimes_correctStartDateIsSet() {
-        every { stockRepository.findTop8ByUpdatableIsTrueOrderByLastUpdateAsc() }.returnsMany(
+        every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() }.returnsMany(
                 listOf(TestObjectCreator.createUsStock(lastUpdate = null)),
                 listOf(TestObjectCreator.createUsStock(lastUpdate = LocalDate.of(2020, 9, 1)))
         )

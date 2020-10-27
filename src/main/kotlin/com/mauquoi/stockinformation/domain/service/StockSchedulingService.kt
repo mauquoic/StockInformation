@@ -48,11 +48,11 @@ class StockSchedulingService @Inject constructor(private val stockService: Stock
         }
     }
 
-    @Scheduled(fixedRate = 8000)
+    @Scheduled(fixedRate = 10000)
     fun updateStockValues() {
         if (updateStocks) {
             LOGGER.info("Updating new stocks.")
-            val stocksThatNeedUpdates = stockRepository.findTop8ByUpdatableIsTrueOrderByLastUpdateAsc()
+            val stocksThatNeedUpdates = stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc()
             runBlocking {
                 val jobs = stocksThatNeedUpdates.map { GlobalScope.launch(Dispatchers.Default) { updateStock(it) } }
                 jobs.joinAll()
