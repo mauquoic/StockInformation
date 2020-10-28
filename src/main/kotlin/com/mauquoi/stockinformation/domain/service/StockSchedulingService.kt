@@ -80,8 +80,10 @@ class StockSchedulingService @Inject constructor(private val stockService: Stock
         try {
             val startDate: LocalDate = stock.lastUpdate?.plusDays(1L) ?: LocalDate.now().minusYears(25)
             LOGGER.info("Gathering historical values for ${stock.lookup} for the time between $startDate and today.")
-            val stockValues = this.stockService.getStockValues(stock, stock.lastUpdate?.plusDays(1)
-                    ?: LocalDate.now().minusYears(25))
+            val stockValues = this.stockService.getStockValues(stock, startDate = stock.lastUpdate?.plusDays(1)
+                    ?: LocalDate.now().minusYears(25),
+                    endDate = LocalDate.now().plusDays(1)
+            )
             stockHistoryRepository.saveAll(stockValues)
             stock.updated(stockValues.maxByOrNull { it.id.date }?.id?.date)
             LOGGER.info("Saved historical values for ${stock.lookup} for the time between $startDate and today.")

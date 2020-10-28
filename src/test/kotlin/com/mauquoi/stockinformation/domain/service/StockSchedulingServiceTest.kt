@@ -72,7 +72,7 @@ internal class StockSchedulingServiceTest {
     @Test
     fun updateStockValues_happyCase() {
         every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createUsStock())
-        every { stockService.getStockValues(any(), any()) } returns listOf(TestObjectCreator.createStockHistory(id = "ACN", date = LocalDate.now()))
+        every { stockService.getStockValues(any(), any(), any()) } returns listOf(TestObjectCreator.createStockHistory(id = "ACN", date = LocalDate.now()))
         every { stockRepository.save(capture(storedStockSlot)) } returns TestObjectCreator.createUsStock()
         every { stockHistoryRepository.saveAll(capture(stockHistorySlot)) } returns listOf(TestObjectCreator.createStockHistory())
 
@@ -111,7 +111,7 @@ internal class StockSchedulingServiceTest {
                 listOf(TestObjectCreator.createUsStock(lastUpdate = null)),
                 listOf(TestObjectCreator.createUsStock(lastUpdate = LocalDate.of(2020, 9, 1)))
         )
-        every { stockService.getStockValues(any(), capture(dateCaptor)) }.returnsMany(
+        every { stockService.getStockValues(any(), capture(dateCaptor), any()) }.returnsMany(
                 listOf(TestObjectCreator.createStockHistory(id = "ACN", date = LocalDate.of(2020, 9, 1))),
                 listOf(TestObjectCreator.createStockHistory(id = "ACN", date = LocalDate.now()))
         )
@@ -156,7 +156,7 @@ internal class StockSchedulingServiceTest {
     @Test
     fun tooManyRequests_stockIsNotSetAsNotUpdatable() {
         every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createChStock())
-        every { stockService.getStockValues(any(), any()) } throws HttpClientErrorException.create(HttpStatus.TOO_MANY_REQUESTS,
+        every { stockService.getStockValues(any(), any(), any()) } throws HttpClientErrorException.create(HttpStatus.TOO_MANY_REQUESTS,
                 "", org.springframework.http.HttpHeaders.EMPTY, byteArrayOf(), null)
         stockSchedulingService.updateStockValues()
         verify(exactly = 0) { stockRepository.save(any()) }
