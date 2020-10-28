@@ -12,6 +12,7 @@ import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.transaction.Transactional
@@ -28,9 +29,10 @@ class StockSchedulingService @Inject constructor(private val stockService: Stock
     @Value("\${app.scheduling.waiting-time}")
     private var waitingTime: Long = 1
 
-    @Scheduled(cron = "0 0 0 1 1/1 ?")
+    @Scheduled(cron = "0 0 0 1 * ?")
     fun updateMarkets() {
         updateStocks = false
+        Thread.sleep(waitingTime) // needed to not run into 429 from finnhub
         LOGGER.info("Starting the market update.")
         runBlocking {
             val jobs = markets.shuffled().map { GlobalScope.launch { stockService.updateStockExchange(it.market) } }
@@ -48,7 +50,19 @@ class StockSchedulingService @Inject constructor(private val stockService: Stock
         }
     }
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(cron = "0 0 8 * * ?")
+    fun stopUpdates() {
+        LOGGER.info("Stopping updates for the day")
+        updateStocks = false
+    }
+
+    @Scheduled(cron = "0 0 22 * * ?")
+    fun startUpdates() {
+        LOGGER.info("Starting updates for the night")
+        updateStocks = true
+    }
+
+    @Scheduled(fixedRate = 10100)
     fun updateStockValues() {
         if (updateStocks) {
             LOGGER.info("Updating new stocks.")
@@ -71,10 +85,12 @@ class StockSchedulingService @Inject constructor(private val stockService: Stock
             stockHistoryRepository.saveAll(stockValues)
             stock.updated(stockValues.maxByOrNull { it.id.date }?.id?.date)
             LOGGER.info("Saved historical values for ${stock.lookup} for the time between $startDate and today.")
+            stockRepository.save(stock)
+        } catch (e: HttpClientErrorException.TooManyRequests) {
+            LOGGER.info("Too many requests.")
         } catch (e: Exception) {
             LOGGER.warn("Failed to update the history for ${stock.lookup}", e)
             stock.updatable = false
-        } finally {
             stockRepository.save(stock)
         }
     }

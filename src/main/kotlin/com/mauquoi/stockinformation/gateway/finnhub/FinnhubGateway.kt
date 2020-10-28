@@ -62,7 +62,7 @@ class FinnhubGateway @Inject constructor(private val builder: RestTemplateBuilde
         val stockInfo: StockHistoryDto = restTemplate.getForEntity(url, StockHistoryDto::class.java).body!!
         val historyItems = mutableListOf<StockHistory>()
         for (i in stockInfo.closeList.indices) {
-            val historyItem: StockHistory = StockHistory(
+            val historyItem = StockHistory(
                     id = StockHistoryId(
                             stockLookup = stock.lookup!!,
                             date = stockInfo.timestamps[i].atZone(zone).toLocalDate()),

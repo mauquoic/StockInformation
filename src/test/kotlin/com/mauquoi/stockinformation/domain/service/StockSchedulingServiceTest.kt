@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Assertions.assertAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.springframework.http.HttpStatus
+import org.springframework.web.client.HttpClientErrorException
 import java.lang.RuntimeException
 import java.time.LocalDate
 
@@ -136,7 +138,29 @@ internal class StockSchedulingServiceTest {
 
         verify(exactly = 2) { stockHistoryRepository.saveAll(any()) }
         verify(exactly = 2) { stockRepository.save(any()) }
-
-
     }
+
+    @Test
+    fun startAndStopUpdates_updateStockValuesReact() {
+        every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() } returns emptyList()
+        verify(exactly = 0) { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() }
+
+        stockSchedulingService.startUpdates()
+        stockSchedulingService.updateStockValues()
+        verify(exactly = 1) { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() }
+        stockSchedulingService.stopUpdates()
+        stockSchedulingService.updateStockValues()
+        verify(exactly = 1) { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() }
+    }
+
+    @Test
+    fun tooManyRequests_stockIsNotSetAsNotUpdatable() {
+        every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createChStock())
+        every { stockService.getStockValues(any(), any()) } throws HttpClientErrorException.create(HttpStatus.TOO_MANY_REQUESTS,
+                "", org.springframework.http.HttpHeaders.EMPTY, byteArrayOf(), null)
+        stockSchedulingService.updateStockValues()
+        verify(exactly = 0) { stockRepository.save(any()) }
+    }
+
+
 }
