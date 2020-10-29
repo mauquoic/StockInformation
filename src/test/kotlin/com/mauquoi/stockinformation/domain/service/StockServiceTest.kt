@@ -1,8 +1,11 @@
 package com.mauquoi.stockinformation.domain.service
 
 import com.mauquoi.stockinformation.StockNotFoundException
+import com.mauquoi.stockinformation.domain.model.Market
 import com.mauquoi.stockinformation.domain.model.entity.Exchange
 import com.mauquoi.stockinformation.domain.model.entity.Stock
+import com.mauquoi.stockinformation.domain.model.entity.StockHistory
+import com.mauquoi.stockinformation.domain.repository.StockHistoryRepository
 import com.mauquoi.stockinformation.domain.repository.StockRepository
 import com.mauquoi.stockinformation.gateway.finnhub.FinnhubGateway
 import com.mauquoi.stockinformation.util.TestObjectCreator
@@ -24,6 +27,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.util.*
+import java.util.stream.Stream
+import kotlin.random.Random
 
 @ExtendWith(MockKExtension::class)
 internal class StockServiceTest {
@@ -33,6 +38,9 @@ internal class StockServiceTest {
 
     @MockK
     private lateinit var finnhubGateway: FinnhubGateway
+
+    @MockK
+    private lateinit var stockHistoryRepository: StockHistoryRepository
 
     private lateinit var stockService: StockService
     private val capturedStockId = slot<Long>()
@@ -44,7 +52,7 @@ internal class StockServiceTest {
     @BeforeEach
     fun setUp() {
         clearAllMocks()
-        stockService = StockService(stockRepository, finnhubGateway)
+        stockService = StockService(stockRepository, finnhubGateway, stockHistoryRepository)
     }
 
     @Test
@@ -160,5 +168,26 @@ internal class StockServiceTest {
                 { assertThat(capturedStock.captured.name, `is`("Agriculture Something")) },
                 { assertThat(capturedStock.captured.lookup, `is`("AGM.A")) }
         )
+    }
+
+    @Test
+    fun getWinnersAndLosersForMarket() {
+        every { stockRepository.findAllByMarketAndLastUpdateAfterAndUpdatableIsTrue(any()) } returns getStockSequence()
+        every { stockHistoryRepository.findAllByIdStockLookupAndIdDateInOrderByIdDateAsc(any()) } answers { getRandomHistory() }
+
+        stockService.getWinnersAndLosersForMarket(Market(market = "US", description = "Desc", Currency.getInstance("USD")))
+    }
+
+    private fun getRandomHistory(): List<StockHistory> {
+        return listOf(TestObjectCreator.createStockHistory(open = randomBigDecimal(), close = randomBigDecimal()),
+                TestObjectCreator.createStockHistory(open = randomBigDecimal(), close = randomBigDecimal()))
+    }
+
+    private fun randomBigDecimal(): BigDecimal {
+        return BigDecimal(Random.nextDouble(0.1, 10.0))
+    }
+
+    private fun getStockSequence(): Stream<Stock> {
+        return (0..500L).map { TestObjectCreator.createUsStock(symbol = it.toString()) }.stream()
     }
 }

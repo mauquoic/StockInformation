@@ -5,6 +5,10 @@ import com.mauquoi.stockinformation.const.URL.PathVariable.STOCK_SYMBOL
 
 object URL {
 
+    object Stubs {
+        const val WINNERS_LOSERS = "/stubs/performance"
+    }
+
     object Stock {
         const val STOCK_QUOTE = "/stocks/{$STOCK_SYMBOL}"
     }

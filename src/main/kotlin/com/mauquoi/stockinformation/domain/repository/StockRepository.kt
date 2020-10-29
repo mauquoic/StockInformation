@@ -2,10 +2,13 @@ package com.mauquoi.stockinformation.domain.repository
 
 import com.mauquoi.stockinformation.domain.model.entity.Stock
 import org.springframework.data.jpa.repository.JpaRepository
+import java.time.LocalDate
 import java.util.*
+import java.util.stream.Stream
 
-interface StockRepository: JpaRepository<Stock, Long> {
+interface StockRepository : JpaRepository<Stock, Long> {
     fun findByLookup(createLookup: String): Optional<Stock>
-    fun findAllByMarket(market: String): Set<Stock>
+    fun findAllByMarketAndUpdatableIsTrue (market: String): Stream<Stock>
+    fun findAllByMarketAndLastUpdateAfterAndUpdatableIsTrue (market: String, lastUpdate: LocalDate = LocalDate.now().minusDays(7)): Stream<Stock>
     fun findTop10ByUpdatableIsTrueOrderByLastUpdateAsc(): List<Stock>
 }

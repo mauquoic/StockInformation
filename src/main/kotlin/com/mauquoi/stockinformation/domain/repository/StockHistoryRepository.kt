@@ -5,11 +5,12 @@ import com.mauquoi.stockinformation.domain.model.entity.StockHistoryId
 import org.springframework.data.jpa.repository.JpaRepository
 import java.time.LocalDate
 
-interface StockHistoryRepository: JpaRepository<StockHistory, StockHistoryId> {
+interface StockHistoryRepository : JpaRepository<StockHistory, StockHistoryId> {
 
     fun findAllByIdStockLookup(stockLookup: String): List<StockHistory>
     fun findAllByIdStockLookupAndIdDateAfterAndIdDateBefore(stockLookup: String, startDate: LocalDate, endDate: LocalDate = LocalDate.now())
     fun findTopByIdStockLookupOrderByIdDateDesc(stockLookup: String): StockHistory
-    fun findAllByIdStockLookupAndIdDateInOrderByIdDateAsc(stockLookup: String, dates: List<LocalDate>): List<StockHistory>
+    fun findAllByIdStockLookupAndIdDateInOrderByIdDateAsc(stockLookup: String, dates: List<LocalDate> =
+            listOf(LocalDate.now().minusDays(6), LocalDate.now().minusDays(1))): List<StockHistory>
 
 }

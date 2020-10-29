@@ -13,16 +13,19 @@ import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
+import java.math.BigDecimal
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.transaction.Transactional
 
 @Profile("!test")
 @Service
-class StockSchedulingService @Inject constructor(private val stockService: StockService,
-                                                 private val stockRepository: StockRepository,
-                                                 private val stockHistoryRepository: StockHistoryRepository,
-                                                 private val markets: List<Market>) {
+class StockSchedulingService @Inject constructor(
+        private val stockService: StockService,
+        private val stockRepository: StockRepository,
+        private val stockHistoryRepository: StockHistoryRepository,
+        private val markets: List<Market>,
+) {
 
     private var updateStocks: Boolean = true
 
@@ -95,6 +98,22 @@ class StockSchedulingService @Inject constructor(private val stockService: Stock
             stock.updatable = false
             stockRepository.save(stock)
         }
+    }
+
+    @Scheduled(cron = "0 0 21 * * SAT")
+    fun findWinnersAndLosers() {
+        LOGGER.info("Starting the winner and loser calculation.")
+        val winnerMap = mutableMapOf<Market, Map<Stock, BigDecimal>>()
+        val loserMap = mutableMapOf<Market, Map<Stock, BigDecimal>>()
+        markets.forEach {
+            LOGGER.info("Starting analysis for market ${it.market}")
+            val (winners, losers) = stockService.getWinnersAndLosersForMarket(it)
+            winnerMap[it] = winners
+            loserMap[it] = losers
+            LOGGER.info("The winners for market ${it.market} are ${winners.keys.map { win -> win.lookup }} with performances of ${winners.values} respectively.")
+            LOGGER.info("The losers for market ${it.market} are ${losers.keys.map { los -> los.lookup }} with performances of ${losers.values} respectively.")
+        }
+        LOGGER.info("Finished the winner and loser calculation.")
     }
 
     companion object {
