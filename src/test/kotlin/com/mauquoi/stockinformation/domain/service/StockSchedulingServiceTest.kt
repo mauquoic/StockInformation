@@ -71,7 +71,7 @@ internal class StockSchedulingServiceTest {
 
     @Test
     fun updateStockValues_happyCase() {
-        every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createUsStock())
+        every { stockRepository.findTop30ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createUsStock())
         every { stockService.getStockValues(any(), any(), any()) } returns listOf(TestObjectCreator.createStockHistory(id = "ACN", date = LocalDate.now()))
         every { stockRepository.save(capture(storedStockSlot)) } returns TestObjectCreator.createUsStock()
         every { stockHistoryRepository.saveAll(capture(stockHistorySlot)) } returns listOf(TestObjectCreator.createStockHistory())
@@ -90,7 +90,7 @@ internal class StockSchedulingServiceTest {
 
     @Test
     fun updateStockValues_exception_stockIsStoredAsNotUpdatable() {
-        every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createUsStock(lastUpdate = null))
+        every { stockRepository.findTop30ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createUsStock(lastUpdate = null))
         every { stockService.getStockValues(any(), any()) } throws RuntimeException()
         every { stockRepository.save(capture(storedStockSlot)) } returns TestObjectCreator.createUsStock()
 
@@ -107,7 +107,7 @@ internal class StockSchedulingServiceTest {
 
     @Test
     fun updateStockValues_multipleTimes_correctStartDateIsSet() {
-        every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() }.returnsMany(
+        every { stockRepository.findTop30ByUpdatableIsTrueOrderByLastUpdateAsc() }.returnsMany(
                 listOf(TestObjectCreator.createUsStock(lastUpdate = null)),
                 listOf(TestObjectCreator.createUsStock(lastUpdate = LocalDate.of(2020, 9, 1)))
         )
@@ -142,20 +142,20 @@ internal class StockSchedulingServiceTest {
 
     @Test
     fun startAndStopUpdates_updateStockValuesReact() {
-        every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() } returns emptyList()
-        verify(exactly = 0) { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() }
+        every { stockRepository.findTop30ByUpdatableIsTrueOrderByLastUpdateAsc() } returns emptyList()
+        verify(exactly = 0) { stockRepository.findTop30ByUpdatableIsTrueOrderByLastUpdateAsc() }
 
         stockSchedulingService.startUpdates()
         stockSchedulingService.updateStockValues()
-        verify(exactly = 1) { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() }
+        verify(exactly = 1) { stockRepository.findTop30ByUpdatableIsTrueOrderByLastUpdateAsc() }
         stockSchedulingService.stopUpdates()
         stockSchedulingService.updateStockValues()
-        verify(exactly = 1) { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() }
+        verify(exactly = 1) { stockRepository.findTop30ByUpdatableIsTrueOrderByLastUpdateAsc() }
     }
 
     @Test
     fun tooManyRequests_stockIsNotSetAsNotUpdatable() {
-        every { stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createChStock())
+        every { stockRepository.findTop30ByUpdatableIsTrueOrderByLastUpdateAsc() } returns listOf(TestObjectCreator.createChStock())
         every { stockService.getStockValues(any(), any(), any()) } throws HttpClientErrorException.create(HttpStatus.TOO_MANY_REQUESTS,
                 "", org.springframework.http.HttpHeaders.EMPTY, byteArrayOf(), null)
         stockSchedulingService.updateStockValues()

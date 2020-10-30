@@ -26,26 +26,36 @@ import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.util.UriComponentsBuilder
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import javax.inject.Inject
 
 @Component
-class FinnhubGateway @Inject constructor(private val builder: RestTemplateBuilder,
-                                         private val markets: List<Market>,
-                                         @Value("\${rest.finnhub.url}") private val baseUrl: String,
-                                         @Value("\${rest.finnhub.token}") private val token: String) {
+class FinnhubGateway @Inject constructor(
+        private val builder: RestTemplateBuilder,
+        private val markets: List<Market>,
+        @Value("\${rest.finnhub.url}") private val baseUrl: String,
+        @Value("#{'\${rest.finnhub.tokens}'.split(',')}") private val tokens: List<String>,
+) {
 
     private val zone = ZoneId.systemDefault()
+    private var lastToken: String = ""
 
     fun getStockPrice(shortForm: String): QuoteDto {
         val restTemplate = builder.build()
         val url = UriComponentsBuilder.fromUriString("$baseUrl$QUOTE")
                 .queryParam(SYMBOL, shortForm)
-                .queryParam(TOKEN, token)
+                .queryParam(TOKEN, decideOnToken())
                 .build()
                 .toUriString()
         val stockInfo = restTemplate.getForEntity(url, QuoteDto::class.java).body
         return stockInfo ?: throw RuntimeException("Could not retrieve the stock price")
+    }
+
+    private fun decideOnToken(): String {
+        val token = if(lastToken == tokens[1]) tokens[0] else tokens[1]
+        this.lastToken = token
+        return token
     }
 
     fun getStockCandles(stock: Stock, startDate: LocalDate, endDate: LocalDate): List<StockHistory> {
@@ -56,7 +66,7 @@ class FinnhubGateway @Inject constructor(private val builder: RestTemplateBuilde
                 .queryParam(RESOLUTION, "D")
                 .queryParam(FROM, startDate.atStartOfDay(zone).toEpochSecond())
                 .queryParam(TO, endDate.atStartOfDay(zone).toEpochSecond())
-                .queryParam(TOKEN, token)
+                .queryParam(TOKEN, decideOnToken())
                 .build()
                 .toUriString()
         val stockInfo: StockHistoryDto = restTemplate.getForEntity(url, StockHistoryDto::class.java).body!!
@@ -82,7 +92,7 @@ class FinnhubGateway @Inject constructor(private val builder: RestTemplateBuilde
         val restTemplate = builder.build()
         val url = UriComponentsBuilder.fromUriString("$baseUrl${Constants.Endpoint.SYMBOL}")
                 .queryParam(EXCHANGE, exchange)
-                .queryParam(TOKEN, token)
+                .queryParam(TOKEN, decideOnToken())
                 .build()
                 .toUriString()
         val stocks = restTemplate.exchange(url, HttpMethod.GET, null, object : ParameterizedTypeReference<List<FinnhubStockDto>>() {}).body

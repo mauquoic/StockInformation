@@ -40,7 +40,7 @@ internal class FinnhubGatewayTest {
         clearAllMocks()
         MockKAnnotations.init(this)
         every { builder.build() } returns restTemplate
-        finnhubGateway = FinnhubGateway(builder, MarketConfiguration().markets(), "baseUrl/v1", "token")
+        finnhubGateway = FinnhubGateway(builder, MarketConfiguration().markets(), "baseUrl/v1", listOf("token"))
     }
 
     @Test

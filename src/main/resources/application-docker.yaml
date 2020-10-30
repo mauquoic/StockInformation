@@ -6,9 +6,3 @@ spring:
     password: changeme
     driver-class-name: org.postgresql.Driver
 
-rest:
-  finnhub:
-    url: https://finnhub.io/api/v1/
-    token: brjsqrnrh5r9g3otb490
-  ecb:
-    url: https://api.exchangeratesapi.io/{date}

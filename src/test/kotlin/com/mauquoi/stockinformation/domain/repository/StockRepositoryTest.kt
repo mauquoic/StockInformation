@@ -23,7 +23,7 @@ internal class StockRepositoryTest {
         stocks[12].updatable = false
         repository.saveAll(stocks)
 
-        val lastUpdates = repository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc()
+        val lastUpdates = repository.findTop30ByUpdatableIsTrueOrderByLastUpdateAsc()
 
         assertAll(
                 { assertThat(lastUpdates.size).isEqualTo(10) },

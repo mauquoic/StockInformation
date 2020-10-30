@@ -10,5 +10,5 @@ interface StockRepository : JpaRepository<Stock, Long> {
     fun findByLookup(createLookup: String): Optional<Stock>
     fun findAllByMarketAndUpdatableIsTrue (market: String): Stream<Stock>
     fun findAllByMarketAndLastUpdateAfterAndUpdatableIsTrue (market: String, lastUpdate: LocalDate = LocalDate.now().minusDays(7)): Stream<Stock>
-    fun findTop10ByUpdatableIsTrueOrderByLastUpdateAsc(): List<Stock>
+    fun findTop30ByUpdatableIsTrueOrderByLastUpdateAsc(): List<Stock>
 }

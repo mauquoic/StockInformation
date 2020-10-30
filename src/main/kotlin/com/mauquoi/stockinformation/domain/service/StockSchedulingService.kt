@@ -65,16 +65,25 @@ class StockSchedulingService @Inject constructor(
         updateStocks = true
     }
 
-    @Scheduled(fixedRate = 10100)
+    @Scheduled(fixedRate = 25000)
     fun updateStockValues() {
         if (updateStocks) {
             LOGGER.info("Updating new stocks.")
-            val stocksThatNeedUpdates = stockRepository.findTop10ByUpdatableIsTrueOrderByLastUpdateAsc()
+            val stocksThatNeedUpdates = stockRepository.findTop30ByUpdatableIsTrueOrderByLastUpdateAsc()
             runBlocking {
-                val jobs = stocksThatNeedUpdates.map { GlobalScope.launch(Dispatchers.Default) { updateStock(it) } }
+                val jobs =
+                        coroutineScope {
+                            stocksThatNeedUpdates.map {
+                                launch(Dispatchers.Default) {
+                                    withContext(Dispatchers.IO) {
+                                        updateStock(it)
+                                    }
+                                }
+                            }
+                        }
                 jobs.joinAll()
             }
-            LOGGER.trace("Updated 8 more stocks")
+            LOGGER.info("Updated more stocks")
         }
     }
 

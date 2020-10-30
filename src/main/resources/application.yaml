@@ -29,6 +29,13 @@ spring:
     properties:
       hibernate.order_by.default_null_ordering: first
 
+rest:
+  finnhub:
+    url: https://finnhub.io/api/v1/
+    tokens: brjsqrnrh5r9g3otb490,bue1ibv48v6vkac92f90
+  ecb:
+    url: https://api.exchangeratesapi.io/{date}
+
 app:
   scheduling:
     waiting-time: 60000

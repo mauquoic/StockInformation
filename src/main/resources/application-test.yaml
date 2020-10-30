@@ -2,10 +2,3 @@
 spring:
   datasource:
     url: jdbc:h2:mem:testdb
-
-rest:
-  finnhub:
-    url: https://finnhub.io/api/v1/
-    token: brjsqrnrh5r9g3otb490
-  ecb:
-    url: https://api.exchangeratesapi.io/{date}
