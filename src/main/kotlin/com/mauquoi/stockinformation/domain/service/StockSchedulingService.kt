@@ -29,7 +29,7 @@ class StockSchedulingService @Inject constructor(
         private val stockEventSender: StockEventSender,
 ) {
 
-    private var updateStocks: Boolean = true
+    private var updateStocks: Boolean = false
 
     @Value("\${app.scheduling.waiting-time}")
     private var waitingTime: Long = 1

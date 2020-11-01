@@ -2,11 +2,16 @@ package com.mauquoi.stockinformation.mapping.extension
 
 import com.mauquoi.stockinformation.domain.model.CurrencyLookup
 import com.mauquoi.stockinformation.domain.model.Market
+import com.mauquoi.stockinformation.domain.model.MarketPerformance
+import com.mauquoi.stockinformation.domain.model.StockPerformance
 import com.mauquoi.stockinformation.domain.model.entity.Stock
 import com.mauquoi.stockinformation.gateway.ecb.dto.CurrencyLookupDto
 import com.mauquoi.stockinformation.gateway.finnhub.dto.FinnhubStockDto
 import com.mauquoi.stockinformation.mapping.MappingUtil
+import com.mauquoi.stockinformation.model.dto.ExchangeDto
+import com.mauquoi.stockinformation.model.dto.MarketPerformanceDto
 import com.mauquoi.stockinformation.model.dto.StockDto
+import com.mauquoi.stockinformation.model.dto.StockPerformanceDto
 import java.util.*
 
 fun Stock.toDto(): StockDto = StockDto(name = this.name,
@@ -44,4 +49,26 @@ fun getCurrency(currency: String?, market: String, markets: List<Market>): Curre
         if (currency == "GBX") return Currency.getInstance("GBP")
         else Currency.getInstance("USD")
     }
+}
+
+fun Market.toDto(): ExchangeDto {
+    return ExchangeDto(
+            currency = this.currency,
+            market = this.market,
+            exchangeName = this.description
+    )
+}
+
+fun StockPerformance.toDto(): StockPerformanceDto {
+    return StockPerformanceDto(
+            stock = this.stock.toDto(),
+            performance = this.performance)
+}
+
+fun MarketPerformance.toDto(): MarketPerformanceDto {
+    return MarketPerformanceDto(
+            market = this.market.toDto(),
+            winners = this.winners.map { it.toDto() },
+            losers = this.losers.map { it.toDto() },
+    )
 }

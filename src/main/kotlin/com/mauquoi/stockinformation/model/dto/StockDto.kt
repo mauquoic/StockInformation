@@ -8,5 +8,5 @@ data class StockDto(val name: String,
 
 data class ExchangeDto(val currency: Currency,
                        val market: String,
-                       val stocks: List<StockDto>,
+                       val stocks: List<StockDto> = emptyList(),
                        val exchangeName: String? = null)
