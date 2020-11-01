@@ -7,10 +7,10 @@ import org.springframework.web.bind.annotation.RestController
 import javax.inject.Inject
 
 @RestController
-class StubController @Inject constructor(private val stockSchedulingService: StockSchedulingService) {
+class StubController @Inject constructor(private val stockSchedulingService: StockSchedulingService?) {
 
     @GetMapping(WINNERS_LOSERS)
     fun calculateWinnersAndLosers() {
-        stockSchedulingService.findWinnersAndLosers()
+        stockSchedulingService?.findWinnersAndLosers()
     }
 }
