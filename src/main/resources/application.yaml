@@ -40,7 +40,7 @@ rest:
     url: https://api.exchangeratesapi.io/{date}
 
 kafka:
-  bootstrapAddress: localhost:9092
+  bootstrapAddress: http://mauquoi.com:9092
 
 app:
   scheduling:

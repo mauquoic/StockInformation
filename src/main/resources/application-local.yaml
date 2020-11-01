@@ -5,3 +5,6 @@ spring:
     username: postgres
     password: changeme
     driver-class-name: org.postgresql.Driver
+
+kafka:
+  bootstrapAddress: localhost:9092
