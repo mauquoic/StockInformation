@@ -173,7 +173,7 @@ internal class StockServiceTest {
     @Test
     fun getWinnersAndLosersForMarket() {
         every { stockRepository.findAllByMarketAndLastUpdateAfterAndUpdatableIsTrue(any()) } returns getStockSequence()
-        every { stockHistoryRepository.findAllByIdStockLookupAndIdDateAfterOrderByIdDateAsc(any()) } answers { getRandomHistory() }
+        every { stockHistoryRepository.getWeeklyPerformance(any()) } answers { getRandomHistory() }
 
         stockService.getWinnersAndLosersForMarket(Market(market = "US", description = "Desc", Currency.getInstance("USD")))
     }
