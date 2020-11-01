@@ -19,17 +19,17 @@ internal class StockRepositoryTest {
 
     @Test
     internal fun findTop10ByUpdatableIsTrueOrderByLastUpdateAsc() {
-        val stocks = (0..15L).map { TestObjectCreator.createUsStock(lastUpdate = LocalDate.now().minusDays(it), symbol = it.toString()) }
-        stocks[12].updatable = false
+        val stocks = (0..35L).map { TestObjectCreator.createUsStock(lastUpdate = LocalDate.now().minusDays(it), symbol = it.toString()) }
+        stocks[29].updatable = false
         repository.saveAll(stocks)
 
         val lastUpdates = repository.findTop30ByUpdatableIsTrueOrderByLastUpdateAsc()
 
         assertAll(
-                { assertThat(lastUpdates.size).isEqualTo(10) },
-                { assertThat(lastUpdates[0].lookup).isEqualTo("15") },
-                { assertThat(lastUpdates[9].lookup).isEqualTo("5") },
-                { assertThat(lastUpdates.none { it.lookup == "12" }).isTrue() },
+                { assertThat(lastUpdates.size).isEqualTo(30) },
+                { assertThat(lastUpdates[0].lookup).isEqualTo("35") },
+                { assertThat(lastUpdates[9].lookup).isEqualTo("25") },
+                { assertThat(lastUpdates.none { it.lookup == "29" }).isTrue() },
         )
     }
 }
