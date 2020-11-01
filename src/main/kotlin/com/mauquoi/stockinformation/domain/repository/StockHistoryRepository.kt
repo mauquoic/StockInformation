@@ -10,14 +10,14 @@ interface StockHistoryRepository : JpaRepository<StockHistory, StockHistoryId> {
     fun findAllByIdStockLookup(stockLookup: String): List<StockHistory>
     fun findAllByIdStockLookupAndIdDateAfterAndIdDateBefore(stockLookup: String, startDate: LocalDate, endDate: LocalDate = LocalDate.now())
     fun findTopByIdStockLookupOrderByIdDateDesc(stockLookup: String): StockHistory
-    fun findAllByIdStockLookupAndIdDateAfterOrderByIdDateAsc(
-            stockLookup: String,
+    fun findAllByIdStockLookupInAndIdDateAfterOrderByIdDateAsc(
+            stockLookup: List<String>,
             date: LocalDate = LocalDate.now().minusDays(6),
     ): List<StockHistory>
 
     @JvmDefault
-    fun getWeeklyPerformance(stockLookup: String): List<StockHistory>{
-        return findAllByIdStockLookupAndIdDateAfterOrderByIdDateAsc(stockLookup)
+    fun getWeeklyPerformance(stockLookup: List<String>): List<StockHistory> {
+        return findAllByIdStockLookupInAndIdDateAfterOrderByIdDateAsc(stockLookup)
     }
 
 }

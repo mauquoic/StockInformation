@@ -13,9 +13,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.transaction.Transactional
-import kotlin.streams.asSequence
 import kotlin.streams.toList
 
 @Service
@@ -64,10 +64,20 @@ class StockService @Inject constructor(
 
     @Transactional
     fun getWinnersAndLosersForMarket(market: Market): MarketPerformance {
-        val orderedMap = stockRepository.findAllByMarketAndLastUpdateAfterAndUpdatableIsTrue(market.market)
-                .asSequence()
+        LOGGER.info("Before lookup: ${LocalDateTime.now()} ")
+//        val lookups = stockRepository.findAllByMarketAndLastUpdateAfterAndUpdatableIsTrue(market.market)
+//                .associateBy({ it }, {
+//                    val histories = stockHistoryRepository.getWeeklyPerformance(it.lookup!!)
+//
+//                    if (histories.isNotEmpty()) {
+//                        histories[0].comparePerformance(histories[histories.size - 1])
+//                    } else BigDecimal.ZERO
+//                })
+        val stockLookups = stockRepository.getAllWithWeeklyUpdates(market.market)
+        val weeklyPerformance = stockHistoryRepository.getWeeklyPerformance(stockLookups.map { it.lookup!! })
+        val performances = stockLookups
                 .associateBy({ it }, {
-                    val histories = stockHistoryRepository.getWeeklyPerformance(it.lookup!!)
+                    val histories = weeklyPerformance.filter { h -> h.id.stockLookup == it.lookup }
                     if (histories.isNotEmpty()) {
                         histories[0].comparePerformance(histories[histories.size - 1])
                     } else BigDecimal.ZERO
@@ -76,8 +86,8 @@ class StockService @Inject constructor(
                 .toList()
                 .sortedByDescending { (_, value) -> value }
                 .toMap()
-        val winners = orderedMap.toList().take(10).map { StockPerformance.fromPair(it) }
-        val losers = orderedMap.toList().takeLast(10).map { StockPerformance.fromPair(it) }
+        val winners = performances.toList().take(10).map { StockPerformance.fromPair(it) }
+        val losers = performances.toList().takeLast(10).map { StockPerformance.fromPair(it) }
         return MarketPerformance(market, winners, losers)
     }
 
