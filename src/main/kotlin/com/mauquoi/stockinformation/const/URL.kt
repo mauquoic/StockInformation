@@ -7,6 +7,7 @@ object URL {
 
     object Stubs {
         const val WINNERS_LOSERS = "/stubs/performance"
+        const val UPDATES = "/stubs/updates/{status}"
     }
 
     object Stock {
@@ -27,6 +28,7 @@ object URL {
         const val AUDIT_ID = "auditId"
         const val STOCK_SYMBOL = "symbol"
         const val MARKET = "market"
+        const val STATUS = "status"
     }
 
     object QueryParameter {
