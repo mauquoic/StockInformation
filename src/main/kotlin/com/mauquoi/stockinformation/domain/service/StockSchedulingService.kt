@@ -1,9 +1,11 @@
 package com.mauquoi.stockinformation.domain.service
 
 import com.mauquoi.stockinformation.domain.model.Market
+import com.mauquoi.stockinformation.domain.model.MarketPerformance
 import com.mauquoi.stockinformation.domain.model.entity.Stock
 import com.mauquoi.stockinformation.domain.repository.StockHistoryRepository
 import com.mauquoi.stockinformation.domain.repository.StockRepository
+import com.mauquoi.stockinformation.gateway.event.StockEventSender
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -13,7 +15,6 @@ import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
-import java.math.BigDecimal
 import java.time.LocalDate
 import javax.inject.Inject
 import javax.transaction.Transactional
@@ -25,6 +26,7 @@ class StockSchedulingService @Inject constructor(
         private val stockRepository: StockRepository,
         private val stockHistoryRepository: StockHistoryRepository,
         private val markets: List<Market>,
+        private val stockEventSender: StockEventSender,
 ) {
 
     private var updateStocks: Boolean = true
@@ -112,17 +114,18 @@ class StockSchedulingService @Inject constructor(
     @Scheduled(cron = "0 0 21 * * SAT")
     fun findWinnersAndLosers() {
         LOGGER.info("Starting the winner and loser calculation.")
-        val winnerMap = mutableMapOf<Market, Map<Stock, BigDecimal>>()
-        val loserMap = mutableMapOf<Market, Map<Stock, BigDecimal>>()
+        val marketPerformances = mutableListOf<MarketPerformance>()
         markets.forEach {
             LOGGER.info("Starting analysis for market ${it.market}")
-            val (winners, losers) = stockService.getWinnersAndLosersForMarket(it)
-            winnerMap[it] = winners
-            loserMap[it] = losers
-            LOGGER.info("The winners for market ${it.market} are ${winners.keys.map { win -> win.lookup }} with performances of ${winners.values} respectively.")
-            LOGGER.info("The losers for market ${it.market} are ${losers.keys.map { los -> los.lookup }} with performances of ${losers.values} respectively.")
+            val marketPerformance = stockService.getWinnersAndLosersForMarket(it)
+            if (marketPerformance.containsPerformances()) {
+                marketPerformances.add(marketPerformance)
+            }
+            LOGGER.info("The winners for market ${it.market} are ${marketPerformance.winners}.")
+            LOGGER.info("The losers for market ${it.market} are ${marketPerformance.losers}.")
         }
-        LOGGER.info("Finished the winner and loser calculation.")
+        LOGGER.info("Finished the winner and loser calculation, now sending event.")
+        stockEventSender.sendWinnersAndLosers(marketPerformances)
     }
 
     companion object {

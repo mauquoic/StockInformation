@@ -5,6 +5,7 @@ import com.mauquoi.stockinformation.domain.model.entity.Stock
 import com.mauquoi.stockinformation.domain.model.entity.StockHistory
 import com.mauquoi.stockinformation.domain.repository.StockHistoryRepository
 import com.mauquoi.stockinformation.domain.repository.StockRepository
+import com.mauquoi.stockinformation.gateway.event.StockEventSender
 import com.mauquoi.stockinformation.gateway.finnhub.MarketConfiguration
 import com.mauquoi.stockinformation.util.TestObjectCreator
 import io.mockk.*
@@ -33,6 +34,9 @@ internal class StockSchedulingServiceTest {
 
     @MockK
     private lateinit var stockHistoryRepository: StockHistoryRepository
+    @MockK
+    private lateinit var stockEventSender: StockEventSender
+
     private val markets: List<Market> = MarketConfiguration().markets()
 
     private var storedStockSlot = slot<Stock>()
@@ -41,7 +45,7 @@ internal class StockSchedulingServiceTest {
 
     @BeforeEach
     fun setUp() {
-        stockSchedulingService = StockSchedulingService(stockService, stockRepository, stockHistoryRepository, markets)
+        stockSchedulingService = StockSchedulingService(stockService, stockRepository, stockHistoryRepository, markets, stockEventSender)
     }
 
     @Test
