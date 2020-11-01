@@ -172,7 +172,7 @@ internal class StockServiceTest {
 
     @Test
     fun getWinnersAndLosersForMarket() {
-        every { stockRepository.findAllByMarketAndLastUpdateAfterAndUpdatableIsTrue(any()) } returns getStockSequence()
+        every { stockRepository.getAllWithWeeklyUpdates(any()) } returns getStocks()
         every { stockHistoryRepository.getWeeklyPerformance(any()) } answers { getRandomHistory() }
 
         stockService.getWinnersAndLosersForMarket(Market(market = "US", description = "Desc", Currency.getInstance("USD")))
@@ -187,7 +187,7 @@ internal class StockServiceTest {
         return BigDecimal(Random.nextDouble(0.1, 10.0))
     }
 
-    private fun getStockSequence(): Stream<Stock> {
-        return (0..500L).map { TestObjectCreator.createUsStock(symbol = it.toString()) }.stream()
+    private fun getStocks(): List<Stock> {
+        return (0..500L).map { TestObjectCreator.createUsStock(symbol = it.toString()) }
     }
 }
