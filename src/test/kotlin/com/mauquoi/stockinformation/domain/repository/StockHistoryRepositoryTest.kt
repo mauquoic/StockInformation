@@ -22,11 +22,11 @@ internal class StockHistoryRepositoryTest {
         val histories = (0..8L).map { TestObjectCreator.createStockHistory(date = LocalDate.now().minusDays(it)) }
         repository.saveAll(histories)
 
-        val week = repository.findAllByIdStockLookupAndIdDateAfterOrderByIdDateAsc("ACN", LocalDate.now().minusDays(5))
+        val week = repository.findAllByIdStockLookupAndIdDateAfterOrderByIdDateAsc("ACN", LocalDate.now().minusDays(6))
 
         assertAll(
                 { assertThat(week[0].id.date).isEqualTo(LocalDate.now().minusDays(5)) },
-                { assertThat(week[1].id.date).isEqualTo(LocalDate.now().minusDays(1)) },
+                { assertThat(week[5].id.date).isEqualTo(LocalDate.now()) },
         )
     }
 }
